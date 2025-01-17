@@ -2,11 +2,26 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserCreateDto } from './dto/user.create.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { UserUpdateDto } from './dto/user.update.dto';
+import { ConfigService } from '@nestjs/config';
+import { DatabaseConfig } from 'src/interfaces/configuration.interfaces';
 
+interface EnvironmentVariables {
+  PORT: number;
+  TIMEOUT: string;
+}
 @Injectable()
 export class UserService {
+  constructor(private readonly configService: ConfigService) {
+    const port = this.configService.get('PORT', { infer: true });
+    console.log(port, 'tesing');
+    //     const url = this.configService.get('URL', { infer: true });
+  }
+
   users: UserCreateDto[] = [];
   getUserLIst(userName: string) {
+    const dbUser = this.configService.get<string>('port');
+    const dbHost = this.configService.get<DatabaseConfig>('database');
+    //     console.log(dbUser, dbHost.host, '======>');
     if (userName) {
       return this.users.filter((user) => user.userName.includes(userName));
     }

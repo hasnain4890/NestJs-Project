@@ -2,14 +2,21 @@ import { NotFoundException } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserCreateDto } from './dto/user.create.dto';
+import { Test } from '@nestjs/testing';
 
 describe('UserController', () => {
   let usersController: UserController;
   let usersService: UserService;
 
-  beforeEach(() => {
-    usersService = new UserService();
-    usersController = new UserController(usersService);
+  beforeEach(async () => {
+
+const moduleRef = await Test.createTestingModule({
+        controllers: [UserController],
+        providers: [UserService],
+      }).compile();
+
+    usersService = await moduleRef.get(UserService);
+    usersController = await moduleRef.get(UserController)
   });
 
   describe('findAll', () => {

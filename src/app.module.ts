@@ -13,9 +13,31 @@ import { CustomExceptionFilters } from './common/exception-filters/exception.fil
 import { UppercaseValidationPipe } from './common/pipes/uppercase-validation.pipes';
 import { RolesGuard } from './common/guards/role.guards';
 import { CustomInterceptor } from './common/interceptors/custom.interceptor';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
+import * as Joi from 'joi';
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    UserModule,
+    //     ConfigModule.forRoot({
+    //       isGlobal: true,
+    //       load: [configuration],
+    //       cache: true,
+    //     }),
+    ConfigModule.forRoot({
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid('development', 'production', 'test', 'provision')
+          .default('development'),
+        PORT: Joi.number().port().default(3000),
+      }),
+      validationOptions: {
+        allowUnknown: false,
+        abortEarly: true,
+      },
+    }),
+  ],
   controllers: [AppController],
   providers: [
     AppService,
