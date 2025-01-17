@@ -16,9 +16,9 @@ import {
 import { UserService } from './user.service';
 import { UserCreateDto } from './dto/user.create.dto';
 import { UserUpdateDto } from './dto/user.update.dto';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Role } from 'src/common/decorators/roles.enum';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/decorators/roles.enum';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('users')
 export class UserController {
@@ -34,16 +34,13 @@ export class UserController {
   @Get()
   @Roles(Role.Admin)
   UserListV2(
-    @Query('userName') userName: string,
+    @Query('userName') userName?: string,
     //     @CurrentUser('email') email: string,
-    @CurrentUser('email') user: any,
+    @CurrentUser('email') user?: any,
     //     @Req() request: any,
   ) {
     console.log('user in controller', user);
-    return {
-      message: 'UserList ',
-      users: this.userService.getUserLIst(userName),
-    };
+    return this.userService.getUserLIst(userName);
   }
 
   // Post Method

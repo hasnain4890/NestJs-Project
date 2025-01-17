@@ -10,7 +10,10 @@ export class UserService {
     if (userName) {
       return this.users.filter((user) => user.userName.includes(userName));
     }
-    return this.users;
+    return {
+      message: 'Userlist',
+      users: this.users,
+    };
   }
 
   //Create User Service
