@@ -12,7 +12,6 @@ describe('UserController', () => {
   let userRepositoryMock: Partial<Repository<User>>;
 
   beforeEach(async () => {
-    // Mock the UserRepository
     userRepositoryMock = {
       find: jest.fn(),
       findOne: jest.fn(),

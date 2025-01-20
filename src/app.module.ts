@@ -18,9 +18,11 @@ import configuration from './config/configuration';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
+import { ProductModule } from './products/product.module';
 
 @Module({
   imports: [
+    ProductModule,
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -46,8 +48,9 @@ import { User } from './users/entities/user.entity';
       username: 'root',
       password: 'root',
       database: 'nestjs',
-      entities: [User],
+      //       entities: [User],
       synchronize: true,
+      autoLoadEntities: true,
     }),
   ],
   controllers: [AppController],
