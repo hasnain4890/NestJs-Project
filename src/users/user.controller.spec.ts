@@ -1,67 +1,135 @@
-import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { UserCreateDto } from './dto/user.create.dto';
-import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
 
 describe('UserController', () => {
-  let usersController: UserController;
-  let usersService: UserService;
+  let userController: UserController;
+  let userService: UserService;
+  let userRepositoryMock: Partial<Repository<User>>;
 
   beforeEach(async () => {
+    // Mock the UserRepository
+    userRepositoryMock = {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+      delete: jest.fn(),
+    };
 
-const moduleRef = await Test.createTestingModule({
-        controllers: [UserController],
-        providers: [UserService],
-      }).compile();
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      controllers: [UserController],
+      providers: [
+        UserService,
+        {
+          provide: getRepositoryToken(User),
+          useValue: userRepositoryMock,
+        },
+      ],
+    }).compile();
 
-    usersService = await moduleRef.get(UserService);
-    usersController = await moduleRef.get(UserController)
+    userController = moduleRef.get<UserController>(UserController);
+    userService = moduleRef.get<UserService>(UserService);
+  });
+
+  it('should be defined', () => {
+    expect(userController).toBeDefined();
+    expect(userService).toBeDefined();
   });
 
   describe('findAll', () => {
-    it('should return an array of users', () => {
-      const result = { message: 'UserList ', users: [] };
-      jest.spyOn(usersService, 'getUserLIst').mockImplementation(() => result);
-      expect(usersController.UserListV2('')).toBe(result);
+    it('should return an array of users', async () => {
+      const mockUsers = [
+        { id: 1, userName: 'John Doe', email: 'john@example.com' },
+      ];
+      jest.spyOn(userRepositoryMock, 'find').mockResolvedValue(mockUsers);
+
+      const result = await userController.UserListV2();
+      expect(result).toEqual({ message: 'User list', users: mockUsers });
     });
   });
 
-  describe('findUser', () => {
-    it('should throw NotFoundException if user is not found', () => {
-      const uuid = 'non-existent-uuid';
-      jest.spyOn(usersService, 'findUser').mockImplementation(() => {
-        throw new NotFoundException('User Not Found');
-      });
-
-      try {
-        usersController.FindUser(uuid);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe('User Not Found');
-      }
-
-      expect(usersService.findUser).toHaveBeenCalledWith(uuid);
-    });
-  });
-
-  describe('CreateUser', () => {
-    it('should create a user successfully', () => {
-      const userDto: UserCreateDto = {
-        userName: 'John Doe',
-        email: 'johndoe@example.com',
+  describe('createUser', () => {
+    it('should create a new user and return the created user object', async () => {
+      const mockUserDto = { userName: 'New User', email: 'new@example.com' };
+      const mockUser = {
+        id: 1,
+        ...mockUserDto,
       };
+      jest.spyOn(userRepositoryMock, 'create').mockReturnValue(mockUser);
+      jest.spyOn(userRepositoryMock, 'save').mockResolvedValue(mockUser);
 
-      const result = {
+      const result = await userController.CreateUser(mockUserDto);
+      expect(result).toEqual({
         message: 'User created successfully',
-        user: { uuid: 'some-uuid', ...userDto },
+        user: mockUser,
+      });
+    });
+  });
+
+  describe('updateUser', () => {
+    it('should throw NotFoundException if user is not found', async () => {
+      jest.spyOn(userRepositoryMock, 'findOne').mockResolvedValue(null);
+
+      const userUpdateDto = {
+        userName: 'Updated User',
+        email: 'updated@example.com',
       };
+      await expect(userController.UpdateUser(1, userUpdateDto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
 
-      jest.spyOn(usersService, 'createUser').mockReturnValue(result);
+    it('should update an existing user', async () => {
+      const existingUser = {
+        id: 1,
+        userName: 'Old Name',
+        email: 'old@example.com',
+      };
+      const updatedUser = { ...existingUser, userName: 'Updated Name' };
 
-      const response = usersController.CreateUser(userDto);
-      expect(response).toBe(result);
-      expect(usersService.createUser).toHaveBeenCalledWith(userDto);
+      jest.spyOn(userRepositoryMock, 'findOne').mockResolvedValue(existingUser);
+      jest.spyOn(userRepositoryMock, 'save').mockResolvedValue(updatedUser);
+
+      const result = await userController.UpdateUser(1, {
+        userName: 'Updated Name',
+      });
+      expect(result).toEqual({
+        message: 'User updated successfully',
+        user: updatedUser,
+      });
+    });
+  });
+
+  describe('deleteUser', () => {
+    it('should throw NotFoundException if user is not found', async () => {
+      jest.spyOn(userRepositoryMock, 'findOne').mockResolvedValue(null);
+
+      await expect(userController.DeleteUser(1)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should delete a user and return confirmation message', async () => {
+      const existingUser = {
+        id: 1,
+        userName: 'Delete Me',
+        email: 'delete@example.com',
+      };
+      const deleteResult = { affected: 1, raw: {} }; // Mocked DeleteResult
+
+      jest.spyOn(userRepositoryMock, 'findOne').mockResolvedValue(existingUser);
+      jest.spyOn(userRepositoryMock, 'delete').mockResolvedValue(deleteResult);
+
+      const result = await userController.DeleteUser(1);
+      expect(result).toEqual({
+        message: 'User deleted successfully',
+        user: deleteResult,
+      });
     });
   });
 });

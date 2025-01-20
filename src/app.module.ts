@@ -16,26 +16,38 @@ import { CustomInterceptor } from './common/interceptors/custom.interceptor';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import * as Joi from 'joi';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './users/entities/user.entity';
 
 @Module({
   imports: [
     UserModule,
-    //     ConfigModule.forRoot({
-    //       isGlobal: true,
-    //       load: [configuration],
-    //       cache: true,
-    //     }),
     ConfigModule.forRoot({
-      validationSchema: Joi.object({
-        NODE_ENV: Joi.string()
-          .valid('development', 'production', 'test', 'provision')
-          .default('development'),
-        PORT: Joi.number().port().default(3000),
-      }),
-      validationOptions: {
-        allowUnknown: false,
-        abortEarly: true,
-      },
+      isGlobal: true,
+      load: [configuration],
+      cache: true,
+    }),
+    //     ConfigModule.forRoot({
+    //       validationSchema: Joi.object({
+    //         NODE_ENV: Joi.string()
+    //           .valid('development', 'production', 'test', 'provision')
+    //           .default('development'),
+    //         PORT: Joi.number().port().default(3000),
+    //       }),
+    //       validationOptions: {
+    //         allowUnknown: false,
+    //         abortEarly: true,
+    //       },
+    //     }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'root',
+      database: 'nestjs',
+      entities: [User],
+      synchronize: true,
     }),
   ],
   controllers: [AppController],

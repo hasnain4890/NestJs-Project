@@ -24,52 +24,39 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  //   // Get Method
-  //   @Get()
-  //   @Redirect('http://localhost:3000/users/list', 301)
-  //   UserList(@Req() req: any, @Ip() ip: string) {
-  //     return this.userService.getUserLIst();
-  //   }
-
   @Get()
   @Roles(Role.Admin)
   UserListV2(
     @Query('userName') userName?: string,
-    //     @CurrentUser('email') email: string,
     @CurrentUser('email') user?: any,
-    //     @Req() request: any,
   ) {
     console.log('user in controller', user);
-    return this.userService.getUserLIst(userName);
+    return this.userService.getUserList(userName);
   }
 
   // Post Method
   @Post()
   @Roles(Role.Admin)
-  //   @Header('Cache-Control', 'hasnian')
   CreateUser(@Body() userDto: UserCreateDto) {
     return this.userService.createUser(userDto);
   }
 
   // Find User Method
-  @Get(':uuid')
-  FindUser(@Param('uuid', ParseUUIDPipe) uuid: string) {
-    return this.userService.findUser(uuid);
+  @Get(':id')
+  FindUser(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findUser(id);
   }
 
   // Update User
-  @Patch(':uuid')
-  UpdateUser(
-    @Param('uuid') uuid: string,
-    @Body() userUpdatedDto: UserUpdateDto,
-  ) {
-    return this.userService.updateUser(uuid, userUpdatedDto);
+  @Patch(':id')
+  UpdateUser(@Param('id') id: number, @Body() userUpdatedDto: UserUpdateDto) {
+    return this.userService.updateUser(id, userUpdatedDto);
   }
 
   // Delete User
   // @Roles(['admin', 'manager' , 'user'])
-  @Delete(':uuid')
-  DeleteUser(@Param('uuid') uuid: string) {
-    return this.userService.deleteUser(uuid);
+  @Delete(':id')
+  DeleteUser(@Param('id') id: number) {
+    return this.userService.deleteUser(id);
   }
 }

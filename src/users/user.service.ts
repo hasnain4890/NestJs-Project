@@ -1,49 +1,54 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserCreateDto } from './dto/user.create.dto';
-import { v4 as uuidv4 } from 'uuid';
 import { UserUpdateDto } from './dto/user.update.dto';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseConfig } from 'src/interfaces/configuration.interfaces';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Like, Repository } from 'typeorm';
 
-interface EnvironmentVariables {
-  PORT: number;
-  TIMEOUT: string;
-}
 @Injectable()
 export class UserService {
-  constructor(private readonly configService: ConfigService) {
-    const port = this.configService.get('PORT', { infer: true });
-    console.log(port, 'tesing');
-    //     const url = this.configService.get('URL', { infer: true });
-  }
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+  ) {}
 
-  users: UserCreateDto[] = [];
-  getUserLIst(userName: string) {
-    const dbUser = this.configService.get<string>('port');
-    const dbHost = this.configService.get<DatabaseConfig>('database');
-    //     console.log(dbUser, dbHost.host, '======>');
+  async getUserList(userName: string) {
     if (userName) {
-      return this.users.filter((user) => user.userName.includes(userName));
+      const users = await this.userRepository.find({
+        where: { userName: Like(`%${userName}%`) },
+      });
+      return {
+        message: `Users matching: ${userName}`,
+        users,
+      };
     }
+
+    const users = await this.userRepository.find();
     return {
-      message: 'Userlist',
-      users: this.users,
+      message: 'User list',
+      users,
     };
   }
 
   //Create User Service
-  createUser(userDto: UserCreateDto) {
-    const newUser = {
-      uuid: uuidv4(),
+  async createUser(userDto: UserCreateDto) {
+    const newUser = this.userRepository.create({
       ...userDto,
+    });
+    const user = await this.userRepository.save(newUser);
+    return {
+      message: 'User created successfully',
+      user: user,
     };
-    this.users.push(newUser);
-    return { message: 'User created successfully', user: newUser };
   }
 
   // Find User Service
-  findUser(uuid: string) {
-    const user = this.users.find((user) => user.uuid === uuid);
+  findUser(id: number) {
+    const user = this.userRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
     if (!user) {
       throw new NotFoundException('User Not Found');
     }
@@ -51,31 +56,31 @@ export class UserService {
   }
 
   // Update User Service
-  updateUser(uuid: string, userUpdatedDto: UserUpdateDto) {
-    const userIndex = this.users.findIndex((user) => user.uuid === uuid);
+  async updateUser(id: number, userUpdatedDto: UserUpdateDto) {
+    const user = await this.userRepository.findOne({ where: { id } });
 
-    if (userIndex === -1) {
-      throw new NotFoundException('User Not Found');
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
-
-    this.users[userIndex] = { ...this.users[userIndex], ...userUpdatedDto };
+    const updatedUser = Object.assign(user, userUpdatedDto);
+    await this.userRepository.save(updatedUser);
     return {
       message: 'User updated successfully',
-      user: this.users[userIndex],
+      user: updatedUser,
     };
   }
 
   // Delete User Service
-  deleteUser(uuid: string) {
-    const user = this.users.find((user) => user.uuid === uuid);
+  async deleteUser(id: number) {
+    const user = await this.userRepository.findOne({ where: { id } });
 
     if (!user) {
-      throw new NotFoundException('User Not Found');
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
-    this.users = this.users.filter((user) => user.uuid !== uuid);
+    const deleteUser = await this.userRepository.delete(id);
     return {
-      message: 'User Deleted successfully',
-      user: user,
+      message: 'User deleted successfully',
+      user: deleteUser,
     };
   }
 }
