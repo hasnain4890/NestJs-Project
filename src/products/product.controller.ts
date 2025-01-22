@@ -17,6 +17,12 @@ import { ProductUpdateDto } from './dto/update.product.dto';
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  //getAllDeletedProducts
+  @Get('deleted-products')
+  getAllDeletedProducts() {
+    return this.productService.getAllDeletedProducts();
+  }
+
   // Create New Product
   @Post()
   createProduct(@Body() productDto: ProductCreateDto) {
@@ -52,5 +58,11 @@ export class ProductController {
   @Delete(':id')
   deleteProduct(@Param('id', ParseIntPipe) id: number) {
     return this.productService.deleteProduct(id);
+  }
+
+  // Delete Product
+  @Patch('recover/:id')
+  recoverProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.recoverProduct(id);
   }
 }

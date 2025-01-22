@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, isString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class ProductCreateDto {
   @IsString()
@@ -14,4 +14,7 @@ export class ProductCreateDto {
 
   @IsString()
   description: string;
+
+  @IsNumber()
+  userId: number;
 }

@@ -1,10 +1,17 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { BaseEntity } from '../../common/entity/base.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+} from 'typeorm';
 
 @Entity('products')
-export class Product {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Product extends BaseEntity {
   @Column({ name: 'product_name', type: 'varchar', length: 100 })
   productName: string;
 
@@ -16,4 +23,8 @@ export class Product {
 
   @Column()
   description: string;
+
+  @ManyToMany(() => User, (user) => user.products)
+  @JoinTable({ name: 'user_products' })
+  users: User[];
 }
