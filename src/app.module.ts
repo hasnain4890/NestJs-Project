@@ -19,9 +19,11 @@ import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
 import { ProductModule } from './products/product.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ProductModule,
     UserModule,
     ConfigModule.forRoot({
@@ -29,18 +31,7 @@ import { ProductModule } from './products/product.module';
       load: [configuration],
       cache: true,
     }),
-    //     ConfigModule.forRoot({
-    //       validationSchema: Joi.object({
-    //         NODE_ENV: Joi.string()
-    //           .valid('development', 'production', 'test', 'provision')
-    //           .default('development'),
-    //         PORT: Joi.number().port().default(3000),
-    //       }),
-    //       validationOptions: {
-    //         allowUnknown: false,
-    //         abortEarly: true,
-    //       },
-    //     }),
+
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',

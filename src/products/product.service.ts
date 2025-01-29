@@ -1,18 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ProductCreateDto } from './dto/product.create.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Equal, IsNull, Not, Repository } from 'typeorm';
+import { IsNull, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { ProductUpdateDto } from './dto/update.product.dto';
 import { UserService } from 'src/users/user.service';
 import { User } from 'src/users/entities/user.entity';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class ProductService {
+  private readonly logger = new Logger(ProductService.name);
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-
     private readonly userService: UserService,
   ) {}
 
@@ -129,5 +130,32 @@ export class ProductService {
       message: `product recover with id ${id}`,
       deletedProduct,
     };
+  }
+
+  // Notify users of recoverable products nearing expiration
+  //   @Interval(10000)
+  async notifyProductRecovery() {
+    console.log('notify after 10 seconds');
+    //     const expirationWarningDays = 3;
+    //     const warningDate = new Date();
+    //     warningDate.setDate(warningDate.getDate() - expirationWarningDays);
+    //     const recoverableProducts = await this.productRepository.find({
+    //       withDeleted: true,
+    //       where: {
+    //         deletedDate: MoreThanOrEqual(warningDate),
+    //       },
+    //     });
+    //     if (recoverableProducts.length > 0) {
+    //       recoverableProducts.forEach((product) => {
+    //         this.logger.log(
+    //           `Reminder: Product ID ${product.id} is nearing recovery expiration.`,
+    //         );
+    //         console.log('testing');
+    //         // Here, you could send actual notifications (e.g., via email or a messaging service).
+    //       });
+    //     } else {
+    //       console.log('testing');
+    //       this.logger.log('No recoverable products nearing expiration.');
+    //     }
   }
 }
