@@ -109,11 +109,7 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException('Product Not found');
     }
-    const deletedProduct = await this.productRepository.softRemove(product);
-    return {
-      message: `product Deleted with id ${id}`,
-      deletedProduct,
-    };
+  
   }
 
   //Recover Product Service

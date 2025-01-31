@@ -5,9 +5,13 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Like, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
+  findById(sub: any) {
+	  throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
@@ -24,37 +28,46 @@ export class UserService {
     }
 
     const users = await this.userRepository.find();
+    const usersWithoutPassword = users.map(({ password, ...user }) => user);
+
     return {
       message: 'User list',
-      users,
+      usersWithoutPassword,
     };
   }
 
   //Create User Service
   async createUser(userDto: UserCreateDto) {
+    const hashPassword = await bcrypt.hash(userDto.password, 10);
+
     const newUser = this.userRepository.create({
       ...userDto,
+      password: hashPassword,
     });
+
     const user = await this.userRepository.save(newUser);
+    const { password, ...userWithoutPassword } = user;
     return {
       message: 'User created successfully',
-      user: user,
+      user: userWithoutPassword,
     };
   }
 
   // Find User Service
-  findUser(id: number) {
-    const user = this.userRepository.findOne({
-      where: {
-        id: id,
-      },
+  async findUser(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id },
       relations: {
-        products: true,
+        products: true, // Include related products if necessary
       },
     });
+
     if (!user) {
       throw new NotFoundException('User Not Found');
     }
+
+    //     const { password, ...userWithoutPassword } = user;
+
     return user;
   }
 
@@ -85,5 +98,11 @@ export class UserService {
       message: 'User deleted successfully',
       user: deleteUser,
     };
+  }
+
+  //Find user by email
+  async findByEmail(email: string) {
+    const user = await this.userRepository.findOne({ where: { email } });
+    return user;
   }
 }

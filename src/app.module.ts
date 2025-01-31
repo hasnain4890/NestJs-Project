@@ -7,24 +7,22 @@ import {
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './users/user.module';
-import { ApiKeyMiddleware } from './common/middleware/apikey.middleware';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { CustomExceptionFilters } from './common/exception-filters/exception.filters';
-import { UppercaseValidationPipe } from './common/pipes/uppercase-validation.pipes';
-import { RolesGuard } from './common/guards/role.guards';
-import { CustomInterceptor } from './common/interceptors/custom.interceptor';
-import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
 import { ProductModule } from './products/product.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     ProductModule,
+    AuthModule,
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -48,19 +46,19 @@ import { ScheduleModule } from '@nestjs/schedule';
   providers: [
     AppService,
     { provide: APP_FILTER, useClass: CustomExceptionFilters },
-    { provide: APP_GUARD, useClass: RolesGuard },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CustomInterceptor,
-    },
+    //     { provide: APP_GUARD, useClass: RolesGuard },
+    //     {
+    //       provide: APP_INTERCEPTOR,
+    //       useClass: CustomInterceptor,
+    //     },
     // { provide: APP_PIPE, useClass: UppercaseValidationPipe },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ApiKeyMiddleware)
-      .exclude({ path: 'users', method: RequestMethod.POST })
-      .forRoutes('users');
+    //     consumer
+    //       .apply(ApiKeyMiddleware)
+    //       .exclude({ path: 'users', method: RequestMethod.POST })
+    //       .forRoutes('users');
   }
 }
