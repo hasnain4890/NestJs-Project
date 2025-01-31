@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches } from 'class-validator';
 import { string } from 'joi';
 import { UppercaseValidationPipe } from 'src/common/pipes/uppercase-validation.pipes';
 
@@ -11,5 +11,6 @@ export class UserCreateDto {
   email: string;
 
   @IsString()
+  @Matches(/.*\d.*/, { message: 'Password must contain at least one number' })
   password: string;
 }

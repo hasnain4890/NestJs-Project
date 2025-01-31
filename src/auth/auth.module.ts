@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { UserModule } from 'src/users/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constant';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RefreshToken } from './entities/refresh-token.entity';
 
 @Module({
   imports: [
@@ -13,6 +15,7 @@ import { jwtConstants } from './constant';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1d' },
     }),
+    TypeOrmModule.forFeature([RefreshToken]),
   ],
   controllers: [AuthController],
   providers: [AuthService],

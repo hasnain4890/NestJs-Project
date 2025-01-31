@@ -20,11 +20,15 @@ export class AuthController {
     return this.authService.signIn(signInDto);
   }
 
+  @Post('refresh-token')
+  refreshToken(@Body('uuid') uuid: string) {
+    return this.authService.refreshToken(uuid);
+  }
+
   //get profile endpoint
   @UseGuards(AuthGuard)
   @Get('profile')
   async profile(@Req() req: Request) {
     const token = req.headers['authorization'].split(' ')[1];
-    console.log(token, '====>');
   }
 }
