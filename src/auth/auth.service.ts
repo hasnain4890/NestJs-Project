@@ -38,7 +38,7 @@ export class AuthService {
     return this.generateTokens(user.id, user.userName);
   }
 
-  private async generateTokens(userId: number, userName: string) {
+  public async generateTokens(userId: number, userName: string) {
     const tokenPayload = { sub: userId, userName: userName };
 
     const accessToken = await this.jwtService.signAsync(tokenPayload, {
@@ -92,5 +92,21 @@ export class AuthService {
     const { id, userName } = varifyToken;
     const newAccessToken = this.generateTokens(id, userName);
     return newAccessToken;
+  }
+
+  // local strategy passport js
+
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      return null;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return null;
+    }
+
+    return user;
   }
 }
